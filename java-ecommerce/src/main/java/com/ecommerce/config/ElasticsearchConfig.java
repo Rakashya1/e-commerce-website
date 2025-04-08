@@ -1,24 +1,32 @@
 package com.ecommerce.config;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
 import org.springframework.data.elasticsearch.core.convert.MappingElasticsearchConverter;
 import org.springframework.data.elasticsearch.core.mapping.SimpleElasticsearchMappingContext;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import com.ecommerce.repository.ProductElasticsearchRepository;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.ecommerce.repository")
+@EnableElasticsearchRepositories(
+    basePackages = "com.ecommerce.repository",
+    includeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE, 
+        classes = ProductElasticsearchRepository.class
+    )
+)
+
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     @Value("${elasticsearch.host:localhost}")
@@ -35,26 +43,36 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
                 .withSocketTimeout(3000)
                 .build();
     }
-    
-    /**
-     * Custom ElasticsearchOperations bean for advanced operations
-     */
+
     @Bean
-    public ElasticsearchOperations elasticsearchTemplate() {
-        return new ElasticsearchRestTemplate(elasticsearchClient(), elasticsearchConverter());
+    public RestClient restClient() {
+        return RestClient.builder(new HttpHost(host, port))
+                .build();
     }
-    
-    /**
-     * Converter for mapping between Java objects and Elasticsearch documents
-     */
+
+    @Bean
+    public JacksonJsonpMapper jacksonJsonpMapper() {
+        return new JacksonJsonpMapper();
+    }
+
+    @Bean
+    public ElasticsearchOperations elasticsearchOperations() {
+        return new ElasticsearchTemplate(
+            elasticsearchClient(
+                elasticsearchTransport(
+                    restClient(),
+                    jacksonJsonpMapper()
+                )
+            ),
+            elasticsearchConverter()
+        );
+    }
+
     @Bean
     public ElasticsearchConverter elasticsearchConverter() {
         return new MappingElasticsearchConverter(elasticsearchMappingContext());
     }
-    
-    /**
-     * Mapping context for Elasticsearch document mappings
-     */
+
     @Bean
     public SimpleElasticsearchMappingContext elasticsearchMappingContext() {
         return new SimpleElasticsearchMappingContext();

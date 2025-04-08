@@ -1,13 +1,19 @@
 package com.ecommerce.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventListener;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import com.ecommerce.repository.ProductMongoRepository;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.ecommerce.repository")
+@EnableMongoRepositories(
+    basePackages = "com.ecommerce.repository",
+    includeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE, 
+        classes = ProductMongoRepository.class
+    )
+)
 public class MongoConfig {
 
     @Bean

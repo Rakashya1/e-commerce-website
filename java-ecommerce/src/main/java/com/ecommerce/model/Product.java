@@ -25,10 +25,10 @@ public class Product {
     @Id
     private String id;
     
-    @Field(type = FieldType.Text, analyzer = "standard")
+    @Field(type = FieldType.Text)
     private String name;
     
-    @Field(type = FieldType.Text, analyzer = "standard")
+    @Field(type = FieldType.Text)
     private String description;
     
     @Field(type = FieldType.Double)
@@ -37,7 +37,7 @@ public class Product {
     @Field(type = FieldType.Double)
     private BigDecimal originalPrice;
     
-    @Field(type = FieldType.Text, analyzer = "keyword")
+    @Field(type = FieldType.Keyword)
     private String category;
     
     @Field(type = FieldType.Text)
