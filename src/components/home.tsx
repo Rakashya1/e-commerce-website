@@ -15,10 +15,18 @@ interface Product {
   category: string;
 }
 
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [activeFilters, setActiveFilters] = useState({
     categories: [] as string[],
     priceRange: { min: 0, max: 1000 },
@@ -152,7 +160,32 @@ const HomePage = () => {
   });
 
   const handleAddToCart = (product: Product) => {
-    setCartItems([...cartItems, product]);
+    // Check if product already exists in cart
+    const existingItem = cartItems.find((item) => item.id === product.id);
+
+    if (existingItem) {
+      // Update quantity if product already exists
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        ),
+      );
+    } else {
+      // Add new product to cart
+      setCartItems([
+        ...cartItems,
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.image,
+        },
+      ]);
+    }
+
     setIsCartOpen(true);
   };
 
@@ -161,8 +194,15 @@ const HomePage = () => {
     setCartItems(updatedCart);
   };
 
-  const handleFilterChange = (filters: typeof activeFilters) => {
-    setActiveFilters(filters);
+  const handleFilterChange = (filters: any) => {
+    setActiveFilters({
+      categories: filters.categories || [],
+      priceRange: {
+        min: filters.priceRange ? filters.priceRange[0] : 0,
+        max: filters.priceRange ? filters.priceRange[1] : 1000,
+      },
+      rating: filters.rating || 0,
+    });
   };
 
   return (
@@ -242,6 +282,7 @@ const HomePage = () => {
               categories={Array.from(
                 new Set(mockProducts.map((p) => p.category)),
               )}
+              maxPrice={1000}
             />
           </aside>
 
@@ -270,7 +311,14 @@ const HomePage = () => {
 
             <ProductGrid
               products={sortedProducts}
-              onAddToCart={handleAddToCart}
+              onAddToCart={(id) => {
+                const product = mockProducts.find((p) => p.id === id);
+                if (product) handleAddToCart(product);
+              }}
+              onQuickView={(id) => {
+                console.log("Quick view for product", id);
+                // Implement quick view functionality here
+              }}
             />
           </div>
         </div>
