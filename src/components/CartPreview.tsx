@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, ShoppingCart, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
@@ -16,42 +16,27 @@ interface CartPreviewProps {
   isOpen?: boolean;
   onClose?: () => void;
   items?: CartItem[];
+  onRemoveItem?: (id: string) => void;
 }
 
 const CartPreview = ({
   isOpen = true,
   onClose = () => {},
-  items = [
-    {
-      id: "1",
-      name: "Wireless Headphones",
-      price: 129.99,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80",
-    },
-    {
-      id: "2",
-      name: "Smart Watch",
-      price: 199.99,
-      quantity: 2,
-      image:
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80",
-    },
-    {
-      id: "3",
-      name: "Portable Speaker",
-      price: 79.99,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&q=80",
-    },
-  ],
+  items = [],
+  onRemoveItem,
 }: CartPreviewProps) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(items);
+  const [cartItems, setCartItems] = useState<CartItem[]>(items || []);
+
+  // Update cart items when props change
+  useEffect(() => {
+    setCartItems(items || []);
+  }, [items]);
 
   const handleRemoveItem = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
+    if (onRemoveItem) {
+      onRemoveItem(id);
+    }
   };
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {

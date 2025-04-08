@@ -19,6 +19,8 @@ interface ProductGridProps {
     minRating: number;
   };
   sortOption?: "newest" | "price-low-high" | "price-high-low" | "popularity";
+  onAddToCart?: (id: string) => void;
+  onQuickView?: (id: string) => void;
 }
 
 const ProductGrid = ({
@@ -105,7 +107,16 @@ const ProductGrid = ({
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <ProductCard product={product} />
+                <ProductCard
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  image={product.image}
+                  rating={product.rating}
+                  category={product.category}
+                  onAddToCart={() => onAddToCart?.(product.id)}
+                  onQuickView={() => onQuickView?.(product.id)}
+                />
               </motion.div>
             ))
           ) : (
